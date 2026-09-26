@@ -1,9 +1,9 @@
 # ML Flow Analyzer
 
 面向开发者和学习者的机器学习流程可视化学习工具。
-示图：
+示图(demo.gif)如下：
 
-![ML Flow Analyzer 操作演示](https://github.com/HelloStart/ml-flow-analyzer/raw/refs/heads/main/demo.gif)
+![ML Flow Analyzer 操作演示](./demo.gif)
 
 当前版本：`v0.5`，增加统一“问 AI”。后续规划为候选方向，不代表固定发布日期或必须按顺序完成。
 
