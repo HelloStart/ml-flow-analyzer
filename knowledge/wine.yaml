@@ -1,0 +1,115 @@
+task:
+  id: wine-clustering
+  title: Wine 无监督聚类
+  subtitle: 隐藏葡萄酒品种标签，仅使用 13 项化学成分特征发现自然分组。
+  objective: 理解无监督聚类与分类的本质区别，观察标准化、K 值和初始化对簇结构的影响。
+  source: UCI Wine 数据集，通过 scikit-learn 的 load_wine() 直接加载，无需联网下载。
+  source_url: https://archive.ics.uci.edu/dataset/109/wine
+  dataset_summary: 178 个样本；13 个连续特征；3 个真实品种标签仅用于教学评估，不参与聚类训练。
+  current_task: 意大利同一地区三种不同品种的红酒，能否根据其化学成分，区分出一个葡萄酒是哪一品种。
+  current_data: Wine 数据集来自意大利同一地区三种不同品种的红酒的化学分析结果。它包含178 条样本，每条数据是一份13个葡萄酒化学分析结果，包含酒精、苹果酸、灰分、镁、酚类、颜色强度、脯氨酸等 13 个连续特征。
+  question: 面对这组数据，可以考虑三条路径：1. 人工编写规则；2. 把已知品种作为标签，训练分类模型；3. 暂时隐藏品种标签，尝试聚类，观察数据能否自然形成分组。本任务选择第三条路径，再研究合理的簇数 K 以及聚类结构与已知品种是否一致。
+  method_intro: 人工规则需要组合 13 个化学特征并维护大量判断条件；监督分类可以利用已知品种标签直接学习类别边界；聚类则暂时不使用标签，只从化学特征本身寻找自然分组。本任务选择尝试聚类，但在完成数据探索之前不预设具体聚类结果。
+  feature_table:
+    - {feature: alcohol, meaning: 酒精含量}
+    - {feature: malic_acid, meaning: 苹果酸}
+    - {feature: ash, meaning: 灰分}
+    - {feature: alcalinity_of_ash, meaning: 灰分碱度}
+    - {feature: magnesium, meaning: 镁含量}
+    - {feature: total_phenols, meaning: 总酚}
+    - {feature: flavanoids, meaning: 黄酮类}
+    - {feature: nonflavanoid_phenols, meaning: 非黄酮酚}
+    - {feature: proanthocyanins, meaning: 原花青素}
+    - {feature: color_intensity, meaning: 颜色强度}
+    - {feature: hue, meaning: 色调}
+    - {feature: od280/od315_of_diluted_wines, meaning: 稀释酒 OD280/OD315}
+    - {feature: proline, meaning: 脯氨酸}
+
+steps:
+  - id: data
+    title: 任务与数据
+    short: 认识 178 个样本和 13 个化学特征
+    goal: 从任务和数据出发，引出在不知道样本类别时如何发现自然分组的问题。
+    explanation: 本任务后续采用无监督聚类：K-Means.fit() 只接收 13 个化学特征，不接收真实品种标签。工具保留标签仅用于聚类完成后的教学对照。
+  - id: explore
+    title: 数据探索
+    short: 只观察量纲、分布和无标签二维投影
+    goal: 该数据有13 维特征，无法直接可视化，可以采用PCA（主成分分析）将数据降到 2 维，同时尽量保留原始数据的方差结构。这样就观察数据的特点。
+    pca_intro: 13 维特征无法直接画在二维平面上。PCA（主成分分析）将标准化后的数据投影到 2 个主成分，同时尽量保留原始数据中的方差结构。这个投影用于观察，不替代原始 13 维特征，也不参与后续 K-Means 训练。
+    pca_code: |-
+      from sklearn.preprocessing import StandardScaler
+      from sklearn.decomposition import PCA
+
+      scaler = StandardScaler()
+      X_scaled = scaler.fit_transform(X)
+
+      pca = PCA(n_components=2)
+      X_pca = pca.fit_transform(X_scaled)
+
+      print("PCA 降维后形状:", X_pca.shape)
+      print("方差比例:", pca.explained_variance_ratio_)
+      print("累计解释方差:", pca.explained_variance_ratio_.sum())
+    conclusion: 无标签 PCA 投影中可以观察到样本分布并非完全均匀，可能存在若干结构，因此值得尝试聚类。但仅凭二维投影不能确定簇数，也不能证明这些结构就是已知葡萄酒品种。
+  - id: choose-k
+    title: 选择簇数 K
+    short: 使用肘部法和轮廓系数
+    goal: 在不知道真实类别数的前提下，为 K-Means 选择合理的簇数量。
+    explanation: 在正式聚类前，先选择算法和簇数。Inertia 随 K 增大必然下降，关注下降速度变缓的肘部；Silhouette 越高表示簇内更紧凑、簇间更分离。
+    algorithm_choice:
+      - algorithm: K-Means
+        fit: 适合本节
+        reason: 数据量小、全为连续数值；算法简单，可输出簇中心，并能对新样本计算最近中心完成分组，便于后续设备端部署。
+      - algorithm: DBSCAN
+        fit: 本节不选
+        reason: 不需要预设 K，能识别噪声和非球形簇；但参数 eps/min_samples 较敏感，没有固定簇中心，也不天然支持保存中心后逐样本推理。
+      - algorithm: 层次聚类
+        fit: 本节不选
+        reason: 适合观察样本层级结构和树状图；但对新样本的直接分组与轻量端侧部署不如 K-Means 简单。
+    choice_conclusion: 本节选择 K-Means 作为第一种聚类算法，不代表它对所有数据都最好。K-Means 需要预先指定簇的数量 K。肘部法则通过绘制“K 值与惯性（Inertia）”的关系图，选择曲线拐点处的 K 值。惯性是每个样本到其所属簇中心的距离平方和，越小说明簇内越紧凑。
+    elbow_observation:
+      - K=1 到 K=3 时，Inertia 下降较快。
+      - K=3 之后，下降速度逐渐放缓，曲线在 K=3 附近出现“肘部”。
+      - 因此，对当前标准化后的 Wine 数据，K=3 是一个合理的候选值。
+    label_comparison: Wine 数据集保留的真实品种标签恰好也是 3 类，与肘部法给出的候选值一致。但这是聚类完成后的教学对照，真实标签没有参与 K 的选择，也没有传给 K-Means。
+  - id: experiment
+    title: 聚类实验
+    short: 调整 K、初始化和缩放后重新聚类
+    goal: 真实执行 K-Means，观察参数对簇大小、中心和 PCA 投影的影响。
+    explanation: 聚类使用全部 178 个样本，没有训练集和测试集划分；新样本分组将在部署步骤单独演示。
+  - id: evaluate
+    title: 聚类评估
+    short: 区分内部指标和外部教学对照
+    goal: 使用 Silhouette 评估几何结构，并用 ARI/NMI 对照隐藏的真实标签。
+    explanation: Silhouette 不需要真实标签；ARI 和 NMI 需要真实标签，只用于教学验证，不属于无监督训练输入。
+  - id: select
+    title: 最终选择
+    short: 选择 K=3 的标准化 K-Means
+    goal: 综合肘部、轮廓系数、稳定性和教学对照选择聚类方案。
+    explanation: 默认标准化后 K=3 通常形成较清晰结构，并与三个已知品种高度一致，但簇编号本身没有品种语义。
+  - id: deploy
+    title: 保存、加载与分组
+    short: 加载 Scaler 和簇中心处理新样本
+    goal: 展示聚类部署产物和最近中心分组过程。
+    explanation: K-Means 的核心产物是簇中心。新样本先按训练时的 Scaler 标准化，再计算到各中心的欧氏距离并选择最近簇。
+
+experiment_parameters:
+  n_clusters: {title: 簇数量 K, type: int, default: 3, min: 2, max: 8, step: 1, description: K-Means 需要预先指定的簇数量。}
+  n_init: {title: 初始化次数, type: int, default: 10, min: 1, max: 50, step: 1, description: 使用不同初始中心重复运行并保留较优结果。}
+  random_state: {title: 随机种子, type: int, default: 42, min: 0, max: 9999, step: 1, description: 控制初始中心选择，使实验可复现。}
+  scaling: {title: 特征标准化, type: bool, default: true, description: K-Means 基于距离，通常应开启标准化。}
+
+metric_notes:
+  silhouette: 不依赖真实标签，范围通常为 -1 到 1，越高表示簇内紧凑、簇间分离。
+  ari: 需要真实标签，比较两种分组的一致性，并且不受簇编号置换影响。
+  nmi: 需要真实标签，衡量聚类分组与真实品种之间共享的信息。
+
+metric_table:
+  - {name: Silhouette Score, requires_labels: 否, measures: 簇内紧凑度与簇间分离度, range: "[-1, 1]"}
+  - {name: Adjusted Rand Index（ARI）, requires_labels: 是, measures: 聚类结果与真实标签的一致性, range: "通常为 [0, 1]，随机一致附近为 0"}
+  - {name: Normalized Mutual Info（NMI）, requires_labels: 是, measures: 聚类分组与真实标签共享的信息, range: "[0, 1]"}
+
+observations:
+  - 簇编号 0、1、2 是任意标识，不天然对应 class_0、class_1、class_2。
+  - 标准化决定了各化学特征能否公平参与距离计算。
+  - PCA 二维图只保留部分方差信息，用于观察，不参与 K-Means 训练。
+  - 内部指标与外部标签对照回答不同问题，不能相互替代。

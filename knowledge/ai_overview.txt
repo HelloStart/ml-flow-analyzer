@@ -1,0 +1,65 @@
+Artificial Intelligence (AI)
+|
++-- Machine Learning (ML) -- 从数据中学习规律
+|   |
+|   +-- 技术类型
+|   |   +-- Supervised Learning（监督学习） -> 分类、回归、检测
+|   |   +-- Unsupervised Learning（无监督学习） -> 聚类、降维
+|   |   +-- Reinforcement Learning（强化学习）
+|   |   +-- Deep Learning（深度学习）
+|   |       +-- CNN（图像） -> 如 TinyML 中的 person_detection
+|   |       +-- RNN / LSTM（序列）
+|   |       +-- Transformer（长序列建模）
+|   |
+|   +-- 工具与框架
+|   |   +-- TensorFlow -- Google 主导，生态完整
+|   |   +-- PyTorch -- Meta 主导，研究与工程广泛使用
+|   |   +-- ONNX -- 常用模型交换格式
+|   |   +-- TensorFlow Lite -- 轻量化部署（.tflite）
+|   |   +-- TensorFlow Lite Micro -- 嵌入式 MCU 推理引擎
+|   |
+|   +-- 开发流程（Pipeline）
+|   |   +-- 数据准备 -> 数据采集、清洗
+|   |   +-- 数据标注 -> 建立输入与目标
+|   |   +-- 创建模型 -> 选择算法或设计网络结构
+|   |   +-- 训练 -> fit() 拟合参数
+|   |   +-- 评估 -> Accuracy、F1、混淆矩阵等
+|   |   +-- 优化/量化 -> 减小模型并适配目标设备
+|   |   +-- 部署 -> 桌面、云端、边缘设备或 MCU
+|   |
+|   +-- 部署层级（从云到端）
+|       +-- Cloud AI -> 数据中心与云服务
+|       +-- Edge AI -> 手机、摄像头、网关
+|       +-- AIoT -> 智能门铃、农业与工业传感器
+|       +-- TinyML -> 在资源受限 MCU 上运行 ML
+|           +-- 常见平台：ESP32、STM32、RISC-V
+|
++-- Generative AI (GenAI) -- 创造新内容
+    |
+    +-- 核心技术
+    |   +-- Transformer / Attention
+    |   +-- 自回归生成（Autoregressive） -> 逐步生成文本或代码
+    |   +-- 扩散模型（Diffusion） -> 图像、音频和视频生成
+    |   +-- 多模态建模 -> 跨文本、图像和音频理解与生成
+    |
+    +-- 模型类型
+    |   +-- 大语言模型（LLM） -> Qwen、GPT、Llama
+    |   +-- 图像生成模型
+    |   +-- 语音与音乐生成模型
+    |   +-- 视频生成模型
+    |   +-- 多模态模型
+    |
+    +-- 工具与部署
+    |   +-- Hugging Face -- 模型与数据生态
+    |   +-- Transformers -- 模型加载、训练和推理库
+    |   +-- llama.cpp / MLX -- 本地推理引擎
+    |   +-- GGUF -- 常见本地量化模型格式
+    |   +-- ONNX Runtime 等跨平台推理工具
+    |
+    +-- 与 ML 的融合方向
+        +-- TinyML 感知 + GenAI 解释
+        |   -> TinyML 检测到事件，GenAI 生成自然语言说明
+        +-- 本地智能代理
+        |   -> 语音或文本指令转为结构化控制命令
+        +-- 异常描述生成
+            -> 传感器模型检测异常，生成式模型给出可读告警

@@ -1,0 +1,378 @@
+task:
+  id: iris-classification
+  title: Iris 鸢尾花分类
+  subtitle: 从一份有标签的数据出发，探索特征并比较不同解决路径。
+  level: 入门
+  tags: [表格数据, 分类, 逻辑回归]
+  objective: 先理解当前有什么问题，能否根据数据特征进行选择、实验和评估方案，最后做出选择，部署到设备。
+  note: 开始不预设最终算法。规则、监督分类和无监督聚类会作为不同性质的候选路线进行比较。
+  introduction: |-
+    鸢尾花（Iris）有三个种类，分别是 Setosa、Versicolor 和 Virginica，通过观察发现，每个种类的花瓣和花萼的形态特征不同。
+    那么就提出这样一个问题：给定一朵鸢尾花，如何区分是哪一种类，是否能根据花萼和花瓣特征不同，判断它属于哪一个种类？
+
+    现在经历一次开发决策：先观察数据，选取数据特征，再判断规则是否足够、是否需要监督学习，或者聚类能否发现自然分组，最后依据效果与部署成本选择方案。
+
+  source: UCI Machine Learning Repository 的 Iris 数据集，本工具通过 scikit-learn 内置的 load_iris() 加载，也可以通过https://archive.ics.uci.edu/dataset/53/iris下载。
+  source_url: https://archive.ics.uci.edu/dataset/53/iris
+  dataset_summary: 150 个样本；4 个数值特征；3 个类别，每类 50 个样本；无缺失值。
+  current_task: 根据一朵鸢尾花的花萼和花瓣测量值，判断它属于 Setosa、Versicolor 还是 Virginica。
+  current_data: 数据集中有 150 朵已知类别的鸢尾花。每个样本记录花萼长度、花萼宽度、花瓣长度和花瓣宽度，单位均为厘米；三个类别各有 50 个样本。
+  question: 这些测量特征能否稳定地区分三个种类？应该编写人工规则，还是让机器学习算法从已有样本中寻找分类方法？
+  feature_table:
+    - feature: sepal length
+      meaning: 花萼长度
+      range: 4.3 - 7.9
+    - feature: sepal width
+      meaning: 花萼宽度
+      range: 2.0 - 4.4
+    - feature: petal length
+      meaning: 花瓣长度
+      range: 1.0 - 6.9
+    - feature: petal width
+      meaning: 花瓣宽度
+      range: 0.1 - 2.5
+  class_table:
+    - class: Setosa（山鸢尾）
+      samples: 50
+    - class: Versicolor（变色鸢尾）
+      samples: 50
+    - class: Virginica（维吉尼亚鸢尾）
+      samples: 50
+
+
+steps:
+  - id: data
+    title: 任务与数据
+    short: 先只有问题、样本和目标
+    goal: 明确输入、目标类别和数据来源，不预设算法。
+    explanation: Iris 数据集共有 150 个样本，每朵花有 4 个测量特征，并标注了 3 个类别。目标是根据新花朵的测量值判断类别。
+    concepts: []
+    visualization: dataset
+  - id: explore
+    title: 数据探索
+    short: 寻找区分度、重叠和数据问题
+    goal: 通过多个维度理解哪些特征有区分力、哪些类别仍会重叠。
+    explanation: 选择不同的 X/Y 特征观察类别分布。花萼长度与花萼宽度存在较多重叠；花瓣长度与花瓣宽度区分度更大，但 Versicolor 和 Virginica 仍有重叠，这些重叠会成为分类错误的来源，也会影响模型选择。
+    concepts: [data-exploration, class-distribution]
+    visualization: exploration
+  - id: solutions
+    title: 方案选择
+    short: 规则、监督学习还是聚类
+    goal: 根据数据特点和任务目标提出候选方案。
+    explanation: 当前任务的目标是从 Setosa、Versicolor 和 Virginica 三个已知类别中判断新样本属于哪一类，因此它首先是一个分类任务。针对这类问题，可以编写人工规则，也可以从逻辑回归、KNN、决策树、SVM、随机森林等监督分类模型中选择；还可以暂时隐藏标签，通过聚类观察数据是否自然形成相近分组。本章不会逐一实现所有模型，而是选择逻辑回归作为监督学习示例，并用手工规则和 K-Means 作为基线与对照。
+    concepts: [classification, rule-based, supervised-learning, unsupervised-learning, clustering]
+    knowledge_groups:
+      - title: 先判断任务类型
+        description: 输出是三个已知种类之一，所以核心任务是分类。
+        concepts: [classification]
+      - title: 可以选择的解决方法
+        description: 人工规则可以直接表达判断条件；监督分类可进一步选择逻辑回归、KNN、决策树、SVM、随机森林等模型。本章选择逻辑回归演示后续流程。
+        concepts: [rule-based, supervised-learning]
+      - title: 用聚类做探索性对照
+        description: 无监督学习不读取类别标签；聚类可以观察自然分组，但聚类编号不等于真实花种。
+        concepts: [unsupervised-learning, clustering]
+    visualization: solutions
+  - id: experiment
+    title: 方案实验
+    short: 选择一条路线查看处理过程
+    goal: 比较不同方案如何使用数据、是否需要训练和缩放，以及如何产生结果。
+    explanation: 全部方案使用同一次分层划分：150 个样本中 120 个用于训练或设计方案，30 个留作测试，每个类别在测试集中各 10 个。准确率等于测试集中预测正确的数量除以 30。切换方案可以观察预处理、模型参数、关键代码、预测结果和错误样本。
+    concepts: [training-set, test-set, feature-scaling, training]
+    visualization: experiment
+  - id: evaluate
+    title: 统一评估
+    short: 把候选方案放在同一标准下比较
+    goal: 比较测试集表现，同时考虑解释性、预处理和部署成本。
+    explanation: 五个监督分类模型使用完全相同的 30 个测试样本计算 Accuracy、Precision、Recall 和 F1。表格用于横向比较总体指标，混淆矩阵进一步说明每个真实类别被预测成了什么。
+    matrix_note: 混淆矩阵的行表示真实类别，列表示预测类别；对角线是预测正确的数量，非对角线是类别之间的误判。切换模型可以查看错误方向是否一致。
+    observations:
+      - 所有五个监督分类模型对 Setosa（类别 0）都完全正确，因为 Setosa 的花瓣特征与另外两类基本不重叠。
+      - 错误集中在 Versicolor（类别 1）与 Virginica（类别 2）之间，两类花瓣特征的重叠是主要原因。
+      - SVM 在本次固定测试集上准确率最高，为 96.67%，但与 KNN、逻辑回归和决策树的差距不大。
+      - 随机森林在本次划分中为 90%，可能与训练样本只有 120 个、可供多棵树形成多样性的样本较少有关；单次结果不能证明它普遍更差。
+    concepts: [evaluation, accuracy, confusion-matrix, generalization]
+    visualization: evaluation
+  - id: select
+    title: 最终选择
+    short: 选择 SVM 并保存模型产物
+    goal: 根据本次对比结果选择 SVM，并把模型和预处理参数保存下来。
+    explanation: SVM 在本次固定测试集上的 Accuracy 和 F1 都最高，因此本任务选择它继续演示部署流程。这个结论只针对当前数据与配置，不表示 SVM 对所有分类任务都最好。
+    selection_reason: SVM 在 30 个测试样本中正确预测 29 个，准确率为 96.67%；所有 Setosa 均正确，只误判了 1 个 Versicolor/Virginica 边界样本。
+    artifact_note: SVM 使用标准化后的输入，因此必须同时保存训练好的 SVM 和由训练集拟合得到的 StandardScaler。只保存模型、不保存 Scaler，会导致部署输入与训练输入不一致。
+    save_code: |-
+      import joblib
+
+      best_model = models["SVM"]
+      joblib.dump(best_model, "iris_best_model.pkl")
+      joblib.dump(scaler, "iris_scaler.pkl")
+
+      print("模型已保存: iris_best_model.pkl")
+      print("Scaler 已保存: iris_scaler.pkl")
+    concepts: [model-selection, trade-off, generalization]
+    visualization: selection
+  - id: deploy
+    title: 部署与推理
+    short: 加载 SVM 和 Scaler 预测新样本
+    goal: 不重新训练，直接加载保存的模型产物完成一次新花朵预测。
+    explanation: 实际应用不会每次启动都重新训练。程序加载模型和 Scaler，用训练时相同的 Scaler 先转换新输入，再调用 SVM 输出类别与概率。
+    sample: [5.1, 3.5, 1.4, 0.2]
+    inference_code: |-
+      import joblib
+
+      new_flower = [[5.1, 3.5, 1.4, 0.2]]
+      loaded_model = joblib.load("iris_best_model.pkl")
+      loaded_scaler = joblib.load("iris_scaler.pkl")
+
+      new_flower_scaled = loaded_scaler.transform(new_flower)
+      prediction = loaded_model.predict(new_flower_scaled)
+      probabilities = loaded_model.predict_proba(new_flower_scaled)
+
+      print(f"预测类别: {class_names[prediction[0]]}")
+      print(dict(zip(class_names, probabilities[0].round(4))))
+    concepts: [inference, model-artifact, preprocessing-consistency, deployment]
+    visualization: deployment
+
+solutions:
+  - id: rules
+    title: 手工规则
+    family: 传统逻辑
+    summary: 根据花瓣长度和宽度编写可读阈值。
+    scaling: 不需要
+    uses_labels: 设计规则时参考标签
+    deployment: 保存少量阈值，按条件分支执行。
+    experiment: true
+    role: 基线
+    model: 人工阈值函数
+    parameters: 花瓣长度阈值 2.45 cm；花瓣宽度阈值 1.75 cm
+    scaling_reason: 不需要。规则直接使用有物理含义的厘米阈值，缩放反而会让规则不直观。
+    process: 参考训练数据的类别分布编写两个阈值；直接对当前测试样本执行条件判断，不进行模型训练。
+    preprocessing_code: |-
+      # 保留原始厘米数值，不进行缩放
+      X_train_ready = X_train
+      X_test_ready = X_test
+    training_code: |-
+      def predict_rule(x):
+        if x.petal_length < 2.45:
+          return "setosa"
+        if x.petal_width < 1.75:
+          return "versicolor"
+        return "virginica"
+    chart_note: 点的颜色表示规则给出的预测类别；外圈标出预测类别与真实标签不一致的测试样本。
+    adjustable_parameters:
+      - {id: petal_length_threshold, title: 花瓣长度阈值, type: float, default: 2.45, min: 1.0, max: 6.9, step: 0.05, description: 小于该值时判断为 Setosa。}
+      - {id: petal_width_threshold, title: 花瓣宽度阈值, type: float, default: 1.75, min: 0.1, max: 2.5, step: 0.05, description: 非 Setosa 样本低于该值时判断为 Versicolor。}
+  - id: logistic
+    title: 逻辑回归
+    family: 监督学习
+    summary: 使用标签学习多分类线性边界并输出概率。
+    scaling: 建议
+    uses_labels: 使用
+    deployment: 保存 scaler、权重和偏置，执行标准化与线性计算。
+    experiment: true
+    role: 本章示例
+    model: sklearn.linear_model.LogisticRegression
+    parameters: max_iter=2000
+    scaling_reason: 建议缩放。逻辑回归通过数值优化学习权重，标准化可让各特征尺度接近，使优化更稳定，也避免正则化对不同量纲的特征产生不均衡影响。
+    process: 先用当前训练集拟合 StandardScaler，再转换训练集和测试集；随后用处理后的训练集拟合逻辑回归，并预测当前测试样本。
+    preprocessing_code: |-
+      scaler = StandardScaler()
+      X_train_scaled = scaler.fit_transform(X_train)
+      X_test_scaled = scaler.transform(X_test)
+    training_code: |-
+      model = LogisticRegression(max_iter=2000)
+      model.fit(X_train_scaled, y_train)
+      y_pred = model.predict(X_test_scaled)
+    chart_note: 点的颜色表示逻辑回归预测的类别；外圈表示该测试样本预测错误。图只投影花瓣长度和宽度，模型实际使用全部 4 个特征。
+    adjustable_parameters:
+      - {id: C, title: 正则化强度 C, type: float, default: 1.0, min: 0.01, max: 100.0, step: 0.1, description: C 越小，正则化越强。}
+      - {id: max_iter, title: 最大迭代次数, type: int, default: 2000, min: 100, max: 10000, step: 100, description: 优化器允许执行的最大迭代次数。}
+  - id: knn
+    title: KNN
+    family: 监督学习
+    summary: 根据新样本附近训练样本的类别进行投票。
+    scaling: 需要
+    uses_labels: 使用
+    deployment: 需要保存训练样本，并在推理时计算距离和近邻投票。
+    experiment: true
+    role: 候选模型
+    model: sklearn.neighbors.KNeighborsClassifier
+    parameters: n_neighbors=3
+    scaling_reason: 需要缩放。KNN 使用欧氏距离寻找邻居，数值范围较大的特征会主导距离；标准化后四个特征才能在距离中合理参与。
+    process: 用训练集拟合 StandardScaler，将训练集和测试集标准化；预测时寻找每个测试样本最近的 3 个训练样本并按类别投票。
+    preprocessing_code: |-
+      scaler = StandardScaler()
+      X_train_scaled = scaler.fit_transform(X_train)
+      X_test_scaled = scaler.transform(X_test)
+    training_code: |-
+      model = KNeighborsClassifier(n_neighbors=3)
+      model.fit(X_train_scaled, y_train)
+      y_pred = model.predict(X_test_scaled)
+    chart_note: 点的颜色是 3 个近邻投票得到的类别；外圈表示投票结果与真实类别不一致。
+    adjustable_parameters:
+      - {id: n_neighbors, title: 邻居数量 K, type: int, default: 3, min: 1, max: 25, step: 1, description: 参与投票的最近训练样本数量。}
+      - {id: weights, title: 投票权重, type: choice, default: uniform, choices: [uniform, distance], description: uniform 等权投票；distance 让近邻权重更高。}
+  - id: decision-tree
+    title: 决策树
+    family: 监督学习
+    summary: 自动学习一组按特征阈值逐层判断的分类规则。
+    scaling: 不需要
+    uses_labels: 使用
+    deployment: 保存树节点、特征索引和阈值，按分支路径执行。
+    experiment: true
+    role: 候选模型
+    model: sklearn.tree.DecisionTreeClassifier
+    parameters: random_state=42
+    scaling_reason: 通常不需要。决策树逐个特征寻找分裂阈值，改变特征尺度不会改变样本在该特征上的先后顺序。
+    process: 直接使用当前原始训练样本学习特征与阈值组成的判断树，再预测当前原始测试样本。
+    preprocessing_code: |-
+      # 决策树直接使用原始特征
+      X_train_ready = X_train
+      X_test_ready = X_test
+    training_code: |-
+      model = DecisionTreeClassifier(random_state=42)
+      model.fit(X_train_ready, y_train)
+      y_pred = model.predict(X_test_ready)
+    chart_note: 点的颜色表示决策树叶节点输出的类别；外圈表示判断路径最终得到错误类别的样本。
+    adjustable_parameters:
+      - {id: max_depth, title: 最大深度, type: optional_int, default: 0, min: 0, max: 20, step: 1, description: 0 表示不限制；较小值可抑制过拟合。}
+      - {id: min_samples_split, title: 分裂最少样本, type: int, default: 2, min: 2, max: 30, step: 1, description: 节点至少有多少样本才允许继续分裂。}
+  - id: svm
+    title: SVM
+    family: 监督学习
+    summary: 寻找类别之间间隔较大的分类边界，可配合核函数处理非线性边界。
+    scaling: 需要
+    uses_labels: 使用
+    deployment: 保存支持向量及模型参数，推理复杂度取决于支持向量数量。
+    experiment: true
+    role: 候选模型
+    model: sklearn.svm.SVC
+    parameters: kernel="rbf", probability=True, random_state=42
+    scaling_reason: 需要缩放。SVM 的间隔和 RBF 核函数都依赖样本距离；不同量纲会改变边界和核函数相似度。
+    process: 使用训练集拟合 StandardScaler，再用处理后的训练样本学习分类边界，最后预测当前测试样本。
+    preprocessing_code: |-
+      scaler = StandardScaler()
+      X_train_scaled = scaler.fit_transform(X_train)
+      X_test_scaled = scaler.transform(X_test)
+    training_code: |-
+      model = SVC(kernel="rbf", probability=True, random_state=42)
+      model.fit(X_train_scaled, y_train)
+      y_pred = model.predict(X_test_scaled)
+    chart_note: 点的颜色表示 SVM 的预测类别；外圈表示落在错误分类区域的测试样本。
+    adjustable_parameters:
+      - {id: C, title: 惩罚参数 C, type: float, default: 1.0, min: 0.01, max: 100.0, step: 0.1, description: C 越大越强调训练样本分类正确，边界可能更复杂。}
+      - {id: kernel, title: 核函数, type: choice, default: rbf, choices: [rbf, linear, poly, sigmoid], description: 决定分类边界的形态。}
+      - {id: gamma, title: Gamma, type: choice, default: scale, choices: [scale, auto], description: 控制单个样本对 RBF/poly/sigmoid 边界的影响范围。}
+  - id: random-forest
+    title: 随机森林
+    family: 监督学习
+    summary: 训练多棵决策树并通过投票得到分类结果。
+    scaling: 不需要
+    uses_labels: 使用
+    deployment: 保存多棵树，通常比单棵决策树占用更多存储。
+    experiment: true
+    role: 候选模型
+    model: sklearn.ensemble.RandomForestClassifier
+    parameters: n_estimators=100, random_state=42
+    scaling_reason: 通常不需要。随机森林由多棵决策树组成，每棵树按单个特征阈值分裂，不依赖特征之间的距离。
+    process: 直接使用原始训练数据训练 100 棵带随机性的决策树，再由多棵树投票预测测试样本类别。
+    preprocessing_code: |-
+      # 随机森林直接使用原始特征
+      X_train_ready = X_train
+      X_test_ready = X_test
+    training_code: |-
+      model = RandomForestClassifier(
+          n_estimators=100,
+          random_state=42,
+      )
+      model.fit(X_train_ready, y_train)
+      y_pred = model.predict(X_test_ready)
+    chart_note: 点的颜色表示森林投票得到的类别；外圈表示多数树投票仍然错误的测试样本。
+    adjustable_parameters:
+      - {id: n_estimators, title: 决策树数量, type: int, default: 100, min: 10, max: 500, step: 10, description: 树越多通常越稳定，但训练和部署成本更高。}
+      - {id: max_depth, title: 单棵树最大深度, type: optional_int, default: 0, min: 0, max: 20, step: 1, description: 0 表示不限制。}
+  - id: kmeans
+    title: K-Means
+    family: 无监督学习对照
+    summary: 隐藏标签，将样本按距离划分为三个自然分组。
+    scaling: 需要
+    uses_labels: 聚类时不使用
+    deployment: 保存 scaler、三个聚类中心和业务类别映射。
+    experiment: true
+    role: 无监督对照
+    model: sklearn.cluster.KMeans
+    parameters: n_clusters=3, n_init=10, random_state=42
+    scaling_reason: 需要缩放。K-Means 根据样本到聚类中心的距离分组，较大数值范围的特征会不成比例地主导聚类结果。
+    process: 隐藏训练标签，用缩放后的训练样本寻找 3 个聚类中心；为了与真实类别评估，再根据训练集多数类别建立聚类编号到花种的映射。
+    preprocessing_code: |-
+      scaler = StandardScaler()
+      X_train_scaled = scaler.fit_transform(X_train)
+      X_test_scaled = scaler.transform(X_test)
+    training_code: |-
+      model = KMeans(n_clusters=3, n_init=10, random_state=42)
+      model.fit(X_train_scaled)
+      cluster_id = model.predict(X_test_scaled)
+    chart_note: 点的颜色表示聚类分组映射后的类别；外圈表示该自然分组与真实花种不一致。聚类编号本身没有类别含义。
+    adjustable_parameters:
+      - {id: n_clusters, title: 聚类数量, type: int, default: 3, min: 2, max: 8, step: 1, description: 希望数据形成的自然分组数量。}
+      - {id: n_init, title: 初始化次数, type: int, default: 10, min: 1, max: 50, step: 1, description: 使用不同初始中心重复运行，选择较好的结果。}
+
+experiment_flow_parameters:
+  test_size:
+    title: 测试集比例
+    default: 0.2
+    description: 从全部样本中保留多少比例只用于测试。
+  random_state:
+    title: 随机种子
+    default: 42
+    description: 控制数据划分与随机模型，使实验可复现。
+  scaling:
+    title: 缩放策略
+    default: auto
+    choices: [auto, on, off]
+    description: auto 按模型需要决定；on 强制标准化；off 使用原始数值。
+  stratify:
+    title: 分层划分
+    default: true
+    description: 保持训练集和测试集中的类别比例。
+  features:
+    title: 使用特征
+    default: [0, 1, 2, 3]
+    description: 选择参与模型训练和预测的输入特征。
+
+concepts:
+  dataset: 数据集：供机器学习过程使用的一组样本。
+  feature: 特征：描述样本、作为模型输入的变量。
+  label: 标签：训练时希望模型预测的目标答案。
+  classification: 分类：从有限的类别中判断样本属于哪一类。
+  rule-based: 规则方案：由开发者明确编写判断条件，不通过训练自动学习参数。
+  supervised-learning: 监督学习：使用带标签样本学习输入到目标类别的映射。
+  unsupervised-learning: 无监督学习：不使用目标标签，从数据自身寻找结构。
+  clustering: 聚类：将相似样本组成若干组，分组不天然等同于业务类别。
+  data-exploration: 数据探索：选择方案前对数据规模、分布和质量进行检查。
+  class-distribution: 类别分布：不同类别各有多少样本。
+  training-set: 训练集：用于调整模型参数的数据。
+  test-set: 测试集：不参与训练、用于检验泛化能力的数据。
+  data-leakage: 数据泄漏：测试信息意外进入训练过程，导致评估结果虚高。
+  feature-scaling: 特征缩放：调整不同特征的数值范围。
+  standardization: 标准化：常见做法是减去均值再除以标准差。
+  model: 模型：从输入到预测结果的可计算规则。
+  parameter: 参数：训练过程中由数据学习得到的模型内部数值。
+  logistic-regression: 逻辑回归：用线性组合和概率函数完成分类的模型。
+  training: 训练：根据样本和标签调整模型参数的过程。
+  evaluation: 评估：使用未参与训练的数据检查模型表现。
+  accuracy: 准确率：预测正确的样本数占总样本数的比例。
+  confusion-matrix: 混淆矩阵：按真实类别和预测类别统计结果的表格。
+  generalization: 泛化：模型对未见过的数据保持有效的能力。
+  model-selection: 模型选择：根据效果和工程约束，从候选方案中作出决定。
+  trade-off: 工程权衡：准确率、解释性、速度、存储和维护成本通常不能同时最优。
+  inference: 推理：训练完成后，使用模型处理新输入。
+  model-artifact: 模型文件：保存模型参数和结构、供之后加载使用的文件。
+  preprocessing-consistency: 预处理一致性：训练和推理必须使用相同的数据转换方式。
+  deployment: 部署：将选定方案及其预处理、参数和运行逻辑交付到目标环境。
+
+concept_titles:
+  classification: 分类任务
+  rule-based: 人工规则
+  supervised-learning: 监督学习
+  unsupervised-learning: 无监督学习
+  clustering: 聚类

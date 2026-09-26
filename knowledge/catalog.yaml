@@ -1,0 +1,244 @@
+routes:
+  - id: overview
+    title: 学习路线
+    subtitle: 先了解课程覆盖范围、学习顺序和当前实现进度，再选择具体路线。
+    default_item: course-overview
+    items:
+      - id: course-overview
+        title: 课程总览
+        status: available
+        summary: 总览 AI 全景、AI 入门和 ML 实践三条路线，以及当前可用内容。
+
+  - id: panorama
+    title: AI 全景
+    subtitle: 建立 AI、ML、DL、GenAI 与部署层级的整体认识。
+    default_item: ai-overview
+    items:
+      - id: ai-overview
+        title: AI 全景图
+        status: available
+        summary: 从人工智能的整体范围理解机器学习和生成式 AI 两条主要技术路线。
+      - id: ml-example
+        title: ML 示例
+        status: available
+        summary: 以室内 RSSI 预测为例，展示机器学习如何从位置与环境数据中学习连续信号强度规律。
+      - id: genai-example
+        title: GenAI 示例
+        status: available
+        summary: 展示提示词、上下文、生成和结果评估过程。
+      - id: fusion-example
+        title: 融合示例
+        status: available
+        summary: 以 ESP32-S3 本地唤醒和云端语音生成应答为例，理解 TinyML 感知、云端 GenAI 与设备播放的协作流程。
+
+  - id: foundations
+    title: AI 入门
+    subtitle: 从机器学习基础出发，逐步理解深度学习、TinyML 和本地大模型协同。
+    default_item: ml-introduction
+    items:
+      - id: ml-introduction
+        title: 1. ML 是什么
+        status: planned
+        summary: 介绍机器学习的定义、基本思想，以及它与传统程序和人工智能的关系。
+      - id: ml-tasks
+        title: 2. ML 有什么任务
+        status: planned
+        summary: 介绍分类、回归、聚类、降维等常见机器学习任务及适用问题。
+      - id: data-representation
+        title: 3. 数据怎么表示
+        status: planned
+        summary: 介绍样本、特征、标签、张量、数据类型和数据集划分。
+      - id: ml-workflow
+        title: 4. 流程怎么跑
+        status: planned
+        summary: 介绍从问题定义、数据准备、训练和评估到保存与部署的完整流程。
+      - id: deep-learning
+        title: 5. 了解深度学习
+        status: planned
+        summary: 介绍神经网络、深度学习的基本概念，以及它与传统机器学习的区别和联系。
+      - id: tinyml
+        title: 6. 走进 TinyML
+        status: planned
+        summary: 介绍模型如何进入 MCU 等资源受限设备，以及量化、内存和推理延迟约束。
+      - id: local-llm-tinyml
+        title: 7. 本地大模型与 TinyML 协同
+        status: planned
+        summary: 介绍本地大模型与端侧 TinyML 在感知、解释、决策和控制流程中的协作方式。
+
+  - id: practice
+    title: ML 实践
+    subtitle: 按课程目录完成从模型训练到设备端部署的可运行任务。
+    default_item: practice-overview
+    items:
+      - id: practice-overview
+        title: 1. Overview
+        status: available
+        summary: 实践环境、工具链和学习顺序。
+      - id: iris-classification
+        title: 2.1 Iris 鸢尾花分类
+        group: 2. 分类问题
+        status: available
+        summary: 从原始数据到多模型实验、评估、保存与推理的完整分类闭环。
+      - id: housing-regression
+        title: 3.1 California Housing 回归
+        group: 3. 回归问题
+        status: available
+        summary: 回归模型、误差指标、残差分析与设备端预测。
+      - id: rssi-prediction
+        title: 3.2 室内 RSSI 信号强度预测
+        group: 3. 回归问题
+        status: planned
+        summary: 根据收发位置、距离和环境特征预测连续 RSSI（dBm），比较物理路径损耗基线与机器学习回归模型的精度、空间误差和部署代价。
+      - id: wine-clustering
+        title: 4.1 Wine 聚类
+        group: 4. 聚类问题
+        status: available
+        summary: 无监督聚类、中心迭代和聚类质量评估。
+      - id: fashion-mnist
+        title: 5.1 Fashion-MNIST 图像分类
+        group: 5. 深度学习应用
+        status: planned
+        summary: 神经网络、Epoch、Batch、Loss 与 Accuracy 动态训练。
+      - id: classic-ml-device
+        title: 6. 传统机器学习模型设备端部署
+        group: 6. TinyML
+        status: planned
+        summary: 分类、回归和聚类模型的设备端实现与资源权衡。
+      - id: tinyml-hello-world
+        title: 7.1 TinyML Hello World
+        group: 7. TinyML 深度学习部署
+        status: planned
+        summary: 模型转换、量化、TFLite Micro 与 MCU 推理。
+      - id: local-llm
+        title: 8. Qwen2.5 本地部署与灯控应用
+        group: 8. 本地 LLM
+        status: planned
+        summary: 本地模型加载、结构化输出和设备控制协作。
+
+course_overview:
+  title: AI 与机器学习可视化学习路线
+  introduction: 本课程面向软件、嵌入式和 AI 应用开发者，通过概念地图、可运行任务和设备部署流程，建立从人工智能全景到机器学习实践的完整认识。
+  audience: 适合希望理解 AI 与机器学习工程流程、但不以算法研究为主要目标的开发者和学习者。
+  learning_method: 先用 AI 全景建立技术地图，再通过 AI 入门理解概念和边界，最后在 ML 实践中观察数据、修改参数、真实训练、评估模型并走向部署。
+  current_progress: v0.5 已交付课程导航、AI 全景、Iris 分类、California Housing 回归、Wine 聚类与统一“问 AI”功能；AI 全景补充 ML、GenAI 与端云融合示例说明，AI 入门及其他可运行任务按目录逐步补充。
+  route_notes:
+    overview: 课程入口与整体进度
+    panorama: 建立 AI、ML、DL、GenAI 和部署方向的全局认识
+    foundations: 学习 ML、数据、流程、DL、TinyML 与本地大模型协同
+    practice: 通过分类、回归、聚类、深度学习和设备部署任务进行实践
+
+panorama:
+  title: 人工智能技术全景
+  summary: AI 是更大的目标与应用范围。机器学习从数据中学习规律；生成式 AI 侧重创造文本、图像、音频等新内容。
+  source: ai_overview.txt
+  overview_image: ai_overview.png
+  overview_description: |-
+    人工智能（AI）是一个总领域，目标是让计算机完成通常需要人类智能参与的任务，例如感知、学习、推理、问题求解和语言处理。
+
+    机器学习（ML）是实现人工智能的一类重要方法，让系统从数据中学习规律，而不是完全依靠人工编写规则。深度学习（DL）属于机器学习，使用多层神经网络从图像、语音、文本等复杂数据中自动学习特征和任务映射。
+
+    生成式人工智能（GenAI）关注创建新的文本、图像、音频、视频或代码。现代生成式模型大多建立在深度学习之上；大语言模型（LLM）同时属于深度学习、生成式 AI 和自然语言处理的重要交叉区域。与主要进行分类、回归或聚类的传统机器学习任务相比，生成式模型更强调学习数据分布并产生新的内容。
+  overview_note: 图中集合关系用于建立直观认识。AI、ML、DL、GenAI、NLP 和 LLM 在实际技术体系中存在交叉，不能把所有应用严格划入单一边界。
+  genai_examples:
+    intro: 以下案例用于建立模型、工具与部署约束的技术地图；本地部署流程将在后续主题中实现。
+    items:
+      - title: 文本生成：本地 LLM 推理
+        model: Qwen2.5 小型指令模型（GGUF 量化文件）
+        flow: 提示词与上下文 → Transformer → 自回归逐 token 生成 → 文本或结构化输出
+        tools: llama.cpp、GGUF、4-bit 量化
+        constraints: 内存占用、量化等级、上下文长度与 tokens/s；PC CPU 或树莓派可作为目标平台，实际体验需按设备测量。
+        role: 后续本地部署主线，用于理解模型文件、推理引擎和端侧生成的工程权衡。
+      - title: 图像生成：扩散模型
+        model: Stable Diffusion 等文生图模型
+        flow: 文本提示词 → 文本编码 → 潜空间逐步去噪 → 图像解码 → 生成图像
+        tools: Hugging Face Diffusers、本地 WebUI
+        constraints: GPU 显存、图像分辨率、采样步数、采样器与生成时长；本地可用推理通常比小型 LLM 更依赖 GPU。
+        role: 横向说明 GenAI 也能生成图像；重点理解扩散过程与生成资源约束，不作为当前本地部署主线。
+  fusion_example:
+    image: fusion_voice_flow.png
+    intro: 本示例展示端侧感知与云端生成如何分工：设备持续处理音频并完成低延迟唤醒，只有触发后才调用云端语音与生成服务。
+    device_steps:
+      - ESP32-S3 使用 ESP-SR 音频前端处理麦克风信号，可按项目配置使用降噪、语音活动检测等能力。
+      - WakeNet 使用轻量神经网络判断是否检测到唤醒词，持续运行但不需要将全部音频上传。
+      - 触发后通过 Wi-Fi 上传后续语音；收到 PCM 音频后由 I2S 功放播放。
+    cloud_steps:
+      - ASR 将上传语音转换为文本。
+      - LLM 根据文本和上下文自回归生成回答。
+      - TTS 将回答合成为音频，并将结果回传设备。
+    ml_system: Supervised Learning → 分类 + Deep Learning → 轻量 CNN/序列模型 + TinyML → ESP32-S3。
+    genai_system: 唤醒后录音经 Wi-Fi 上传，走：ASR（SenseVoice/Paraformer/Whisper）→ 文本 → LLM（Qwen/DeepSeek/GPT）自回归生成 → TTS（VITS/CosyVoice）回传 PCM → ESP32 MAX98357A 播“在”或完整回答。
+  ml_example:
+    problem: 如今，室内无线网络（Wi-Fi、Bluetooth）几乎无处不在。在各类无线应用中，RSSI（接收信号强度指示）常被用于实现室内定位、网络质量评估等关键任务，其典型用法是通过收发距离来估算信号强弱。然而，这种简易模型极易受到墙壁、家具等环境障碍物的干扰，导致预测偏差较大，实用性受限。为提升预测精度，学界引入了确定性模型（如射线追踪）。该类模型基于物理定律推演信号传播路径，虽精度较高，但计算量巨大、耗时极长。这也使得传统的现场勘测工作不仅费时费力，更难以及时适配复杂的室内环境变化。引入机器学习为了解决"简易模型不准，精准模型太慢"这一矛盾，这个示例尝试利用机器学习模型预测各种室内环境中的 RSSI 值。通过机器学习，我们可以快速且准确地近似信号强度，促进物联网设备和无线网络的最佳部署和覆盖规划。
+    workflow: 使用对数-距离路径损耗模型生成合成数据集，比较多个机器学习模型，以预测房间内特定坐标的 RSSI，并给出评价指标。
+    models:
+      - {name: 线性回归, detail: 基线性能的简单模型。}
+      - {name: 决策树, detail: 提供可解释性，但可能难以处理复杂的空间关系。}
+      - {name: K 近邻（KNN）, detail: 基于邻近度的直观空间预测。}
+      - {name: 高斯过程回归（GPR）, detail: 提供概率估计，擅长空间相关性（该项目中 R² = 0.975，表现最佳）。}
+      - {name: 支持向量回归（SVR）, detail: 适用于高维空间中的非线性数据。}
+      - {name: 前馈神经网络（FNN）, detail: 带有 Dropout 的多层感知器。}
+      - {name: 卷积神经网络（CNN）, detail: 用于捕捉空间特征的深度架构。}
+      - {name: 循环神经网络（RNN）, detail: 基于 LSTM 的序列/模式预测模型。}
+    knowledge_intro: 这是一个典型的机器学习示例：给定坐标/房间几何特征 → 预测连续数值 RSSI（dBm），属于监督学习中的回归任务。它覆盖的知识点对应知识体系中的：
+    knowledge_points:
+      - 技术类型：Supervised Learning → 回归。
+      - 模型跨度：从 Linear Regression / KNN / SVR / Decision Tree（经典 ML）到 FNN / CNN / RNN（深度学习）。
+      - Pipeline：合成数据（log-distance 路径损耗）→ 预处理 → 训练 → MAE / MSE / R² 评估，完整闭环。
+    positioning: 这个示例的定位是：展示 ML 如何从物理规律和空间特征中学习连续数值，重点在于回归任务、评估指标的选择，以及经典模型与神经网络的对比。
+    knowledge:
+      source: https://github.com/Harikeshav-R/RSSI-Prediction
+      result_image: rssi_reference_metrics.png
+  
+  branches:
+    - title: Machine Learning
+      subtitle: 从数据中学习规律
+      items:
+        - 监督学习：分类、回归、检测
+        - 无监督学习：聚类、降维
+        - 深度学习：CNN、RNN/LSTM、Transformer
+        - 流程：数据准备、训练、评估、量化、部署
+        - 部署：云端、Edge AI、TinyML
+    - title: Generative AI
+      subtitle: 创造新内容
+      items:
+        - 核心：Transformer、自回归、扩散、多模态
+        - 模型：LLM、图像、语音和多模态模型
+        - 工具：Transformers、llama.cpp、GGUF、ONNX Runtime
+        - 部署：云端服务与本地 LLM
+        - 融合：感知、生成、控制和自然语言解释
+
+foundations:
+  concepts:
+    - name: Machine Learning
+      short: ML
+      meaning: 从数据中学习输入与输出或数据结构之间的规律。
+      typical: 表格、传感器、图像等数据上的分类、回归、聚类。
+      boundary: 既包含传统机器学习，也包含深度学习。
+    - name: Deep Learning
+      short: DL
+      meaning: 使用多层神经网络从数据中学习特征与任务映射。
+      typical: 图像、语音、自然语言和复杂高维数据。
+      boundary: 是机器学习的子领域，不等于全部 AI。
+    - name: TinyML
+      short: TinyML
+      meaning: 让机器学习模型在 MCU 等强资源约束设备上运行。
+      typical: 低功耗传感器、异常检测、关键词识别和视觉唤醒。
+      boundary: 更接近部署领域，不是一种独立学习算法。
+    - name: Large Language Model
+      short: LLM
+      meaning: 基于大规模语言数据训练、理解和生成文本的深度学习模型。
+      typical: 对话、代码、知识问答、结构化输出与智能代理。
+      boundary: 是生成式 AI 的重要分支，但不是深度学习的全部。
+  problems:
+    - name: 分类
+      question: 样本属于哪个已知类别？
+      example: 鸢尾花种类、图片类别、故障类型
+    - name: 回归
+      question: 需要预测的连续数值是多少？
+      example: 房价、温度、剩余寿命
+    - name: 聚类
+      question: 没有标签时，数据自然形成哪些分组？
+      example: 用户分群、工况聚类、异常群组
+    - name: 降维
+      question: 如何用更少维度保留主要信息？
+      example: 可视化、压缩、去噪和特征预处理

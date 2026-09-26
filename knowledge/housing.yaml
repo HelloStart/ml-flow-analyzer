@@ -1,0 +1,122 @@
+task:
+  id: housing-regression
+  title: California Housing 房价回归
+  subtitle: 根据街区收入、房龄、房间、人口与地理位置等统计特征预测房价中位数。
+  objective: 理解回归任务如何从连续目标、数据探索、多模型实验走向误差评估和新样本预测。
+  source: 1990 年美国加州人口普查的街区统计数据，通过 scikit-learn 的 fetch_california_housing() 获取并缓存。
+  source_url: https://scikit-learn.org/stable/modules/generated/sklearn.datasets.fetch_california_housing.html
+  dataset_summary: 20,640 个街区样本；8 个数值特征；连续目标 MedHouseVal；无缺失值。
+  current_task: 任务：根据一个街区的 8 个统计特征，预测该街区的房价中位数。
+  current_data: 每条数据代表一个加州街区，输入包含收入、房龄、房间、卧室、人口、居住人数和经纬度等 8 个统计特征；目标 MedHouseVal 是连续房价数值，单位为十万美元。
+  question: 哪些特征与房价关系更明显？线性模型是否足够，还是需要决策树或随机森林捕捉非线性关系？
+  method_intro: 如果使用传统的基于规则的方法，由于输入特征较多，特征之间还可能相互影响，条件判断会变得复杂且难以维护。这是回归问题，因为要预测的是连续数值，而不是有限类别。拿到数据后应先观察目标分布、特征量纲、相关性和极端值，再决定使用线性模型、正则化线性模型或树模型。
+  display_limit: 200
+  target:
+    name: MedHouseVal
+    meaning: 街区房价中位数
+    unit: 十万美元
+    range: 0.15 - 5.0
+  feature_table:
+    - {feature: MedInc, meaning: 街区收入中位数, note: 单位约为一万美元}
+    - {feature: HouseAge, meaning: 房龄中位数, note: 年}
+    - {feature: AveRooms, meaning: 平均每户房间数, note: total_rooms / households}
+    - {feature: AveBedrms, meaning: 平均每户卧室数, note: total_bedrooms / households}
+    - {feature: Population, meaning: 街区人口数, note: 人}
+    - {feature: AveOccup, meaning: 平均每户居住人数, note: population / households}
+    - {feature: Latitude, meaning: 纬度, note: 地理位置}
+    - {feature: Longitude, meaning: 经度, note: 地理位置}
+
+steps:
+  - id: data
+    title: 任务与数据
+    short: 认识连续目标和 8 个输入特征
+    goal: 明确回归任务的输入、连续输出、数据来源与展示边界。
+    explanation: 数据共有 20,640 条。为保持界面可读，中间表格只展示前 200 条，但训练和评估仍使用全部数据。
+  - id: explore
+    title: 数据探索
+    short: 观察目标分布、相关性和极端值
+    goal: 理解数据量纲、目标右偏和异常值为何会影响模型选择。
+    explanation: Population、AveOccup 与收入等特征量纲差异明显；MedHouseVal 右偏且在 5.0 附近存在上限；AveRooms 和 AveBedrms 有极端值。
+    findings:
+      - title: 无缺失值
+        description: 8 个输入特征和目标列均无缺失，不需要执行缺失值填充。
+      - title: 特征量纲差异明显
+        description: Population、AveOccup、MedInc 等特征范围差异很大；对依赖梯度或正则化的线性模型应先标准化。
+      - title: 目标变量分布右偏
+        description: 大部分房价集中在 0.5-3.0，少量高价街区形成右尾，5.0 附近还存在数据上限。
+      - title: 部分特征存在极端值
+        description: AveRooms 和 AveBedrms 有明显极端样本，可能来自特殊街区，也可能显著影响线性模型。
+  - id: solutions
+    title: 方案选择
+    short: 比较线性模型与树模型
+    goal: 从线性关系、正则化和非线性特征交互角度提出候选模型。
+    explanation: Linear Regression 建立基线；Ridge/Lasso 加入正则化；Decision Tree 和 Random Forest 捕捉非线性关系。SVR 在 20,640 条数据上较慢，本轮不加入。
+  - id: experiment
+    title: 方案实验
+    short: 调整模型参数并真实重新训练
+    goal: 使用同一训练/测试划分比较模型参数、缩放方式、训练耗时和误差变化。
+    explanation: 默认 test_size=0.2、random_state=42，不使用分类任务的 stratify。Scaler 只在训练集上拟合。
+  - id: evaluate
+    title: 模型评估
+    short: 使用 RMSE、MAE、R² 和残差
+    goal: 结合总体指标、预测与真实值、残差分布判断模型表现。
+    explanation: RMSE 和 MAE 越小越好，R² 越接近 1 越好；但高房价区低估等局部问题需要从图中观察。
+  - id: select
+    title: 最终选择
+    short: 根据默认实验选择随机森林
+    goal: 保存默认实验中综合表现较好的模型及其预处理产物。
+    explanation: 随机森林通常能捕捉收入、位置和居住特征之间的非线性交互；最终结论只针对当前数据、划分和参数。
+    boundary: 如果应用重点是筛选或估值高价房产，只看总体 R² 不够。需要单独检查真实房价大于 4.0 的样本，确认模型是否存在系统性低估。
+    improvements:
+      - 对目标变量尝试对数变换，压缩高价区的尺度差异。
+      - 收集更多高价街区样本，补充学区、交通和房屋状况等当前未收录特征。
+      - 根据业务目标尝试分位数回归，而不只预测条件均值。
+      - 使用交叉验证或多随机种子实验，确认当前优势不是单次数据划分造成的。
+  - id: deploy
+    title: 保存、加载与预测
+    short: 对一个新街区预测房价
+    goal: 重新加载模型产物，对新输入执行一致预处理并输出连续预测值。
+    explanation: 回归输出不是类别概率，而是一个连续房价估计；训练端和推理端必须保持特征顺序一致。
+
+models:
+  - id: linear
+    title: Linear Regression
+    family: 线性模型
+    scaling: 建议
+    summary: 用特征的线性组合预测连续房价，作为可解释基线。
+    parameters: []
+  - id: ridge
+    title: Ridge
+    family: 正则化线性模型
+    scaling: 需要
+    summary: 使用 L2 正则化限制系数幅度。
+    parameters:
+      - {id: alpha, title: alpha, type: float, default: 1.0, min: 0.0, max: 100.0, step: 0.1, description: 越大表示正则化越强。}
+  - id: lasso
+    title: Lasso
+    family: 正则化线性模型
+    scaling: 需要
+    summary: 使用 L1 正则化，可将部分特征系数压到 0。
+    parameters:
+      - {id: alpha, title: alpha, type: float, default: 0.01, min: 0.0001, max: 1.0, step: 0.01, description: 越大表示稀疏约束越强。}
+  - id: decision-tree
+    title: Decision Tree
+    family: 树模型
+    scaling: 不需要
+    summary: 通过特征阈值分裂捕捉非线性关系，但单棵树容易过拟合。
+    parameters:
+      - {id: max_depth, title: 最大深度, type: optional_int, default: 0, min: 0, max: 30, step: 1, description: 0 表示不限制。}
+  - id: random-forest
+    title: Random Forest
+    family: 集成树模型
+    scaling: 不需要
+    summary: 多棵随机决策树投票取平均，降低单棵树的方差。
+    parameters:
+      - {id: n_estimators, title: 决策树数量, type: int, default: 50, min: 10, max: 300, step: 10, description: 数量越多通常越稳定，但训练和部署成本更高。}
+      - {id: max_depth, title: 最大深度, type: optional_int, default: 0, min: 0, max: 30, step: 1, description: 0 表示不限制。}
+
+observations:
+  - 线性模型 Linear Regression、Ridge 和 Lasso 的结果通常接近，用于建立可解释基线。
+  - Decision Tree 能捕捉非线性关系，但单棵树容易过拟合；Random Forest 通过集成降低方差。
+  - R² 表示模型解释目标变化的比例，但不能单独说明所有价格区间都预测良好。
+  - 还需要结合预测值与真实值、残差分布和高房价区误差判断模型是否适合具体应用。
